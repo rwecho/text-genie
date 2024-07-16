@@ -14,6 +14,14 @@ import type { MenuProps } from 'antd'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 
+import {
+  ClerkProvider,
+  SignInButton,
+  SignedIn,
+  SignedOut,
+  UserButton,
+} from '@clerk/nextjs'
+
 const { Header, Footer, Sider, Content } = Layout
 
 const menuRightItems = [
@@ -140,9 +148,12 @@ const HomePage = () => {
         minHeight: '100vh',
       }}
     >
-      <Header className='!px-4 flex' style={{ background: colorBgContainer }}>
+      <Header
+        className="!px-4 flex items-center"
+        style={{ background: colorBgContainer }}
+      >
         <Dropdown menu={{ items }}>
-          <a className='!text-gray-600' onClick={(e) => e.preventDefault()}>
+          <a className="!text-gray-600" onClick={(e) => e.preventDefault()}>
             <Space>
               {current}
               <DownOutlined />
@@ -151,35 +162,42 @@ const HomePage = () => {
         </Dropdown>
 
         <Menu
-          className='!ml-auto !border-0'
-          mode='horizontal'
+          className="!ml-auto !border-0"
+          mode="horizontal"
           selectable={false}
           items={menuRightItems}
         />
+
+        <SignedOut>
+          <SignInButton />
+        </SignedOut>
+        <SignedIn>
+          <UserButton />
+        </SignedIn>
       </Header>
       <Content
-        className='!p-4'
+        className="!p-4"
         style={{
           minHeight: 280,
           background: colorBgContainer,
         }}
       >
-        <div className=' w-full max-w-screen-md mx-auto'>
-          <h2 className='mt-8 text-xl text-center font-semibold'>
+        <div className=" w-full max-w-screen-md mx-auto">
+          <h2 className="mt-32 text-xl text-center font-semibold">
             查询、搜集、整理我们的知识库
           </h2>
-          <div className='mt-4 p-2  relative'>
+          <div className="mt-4 p-2  relative">
             <TextArea
-              className='!border-0 !text-md z-10 peer focus:!border-0 focus:!shadow-none focus-within:!border-0 focus-within:!shadow-none'
+              className="!border-0 !text-md z-10 peer focus:!border-0 focus:!shadow-none focus-within:!border-0 focus-within:!shadow-none"
               autoSize={{ minRows: 2, maxRows: 6 }}
-              placeholder='知识的整理从一个问题开始...'
+              placeholder="知识的整理从一个问题开始..."
               value={question}
               onChange={(e) => setQuestion(e.target.value)}
             ></TextArea>
-            <Flex className='z-10 relative'>
+            <Flex className="z-10 relative">
               <Button
-                className='ml-auto'
-                type='text'
+                className="ml-auto"
+                type="text"
                 disabled={!question}
                 onClick={handleSend}
                 loading={sendLoading}
@@ -187,12 +205,12 @@ const HomePage = () => {
                 <SendOutlined></SendOutlined>
               </Button>
             </Flex>
-            <div className='peer-focus:border-gray-600 peer-hover:border-gray-400 top-0 left-0 w-full h-full absolute border-2 rounded-xl'></div>
+            <div className="peer-focus:border-gray-600 peer-hover:border-gray-400 top-0 left-0 w-full h-full absolute border-2 rounded-xl"></div>
           </div>
-          <div className='mt-4'></div>
+          <div className="mt-4"></div>
         </div>
       </Content>
-      <Footer className='!py-2' style={{ textAlign: 'center' }}>
+      <Footer className="!py-2" style={{ textAlign: 'center' }}>
         TextGenie ©2024 Created By o5o2
       </Footer>
     </Layout>
