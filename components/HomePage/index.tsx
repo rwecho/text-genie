@@ -26,7 +26,7 @@ const { Header, Footer, Sider, Content } = Layout
 
 const menuRightItems = [
   {
-    label: 'Notes',
+    label: <a href="/n">Notes</a>,
     key: 'notes',
     icon: <EditOutlined />,
   },

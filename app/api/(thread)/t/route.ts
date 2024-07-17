@@ -1,6 +1,10 @@
 import { NextRequest } from 'next/server'
 
 export async function POST(request: NextRequest, context: {}) {
+
+  // get current user
+
+
   const { question, engine } = await request.json()
 
   if (!question || !engine) {
