@@ -1,17 +1,24 @@
-import { clerkMiddleware } from '@clerk/nextjs/server'
-import { NextFetchEvent, NextRequest, NextResponse } from 'next/server'
+import {
+  clerkMiddleware,
+  createRouteMatcher,
+  getAuth,
+} from '@clerk/nextjs/server'
+import { NextResponse } from 'next/server'
 
-const publicRoutes = ['/', '/app/(marketing)/*', '/app/(public)/*']
-function isPublicRoute(path: string): boolean {
-  return publicRoutes.some((route) => new RegExp(`^${route}$`).test(path))
-}
+const isPublicRoute = createRouteMatcher(['/sign-in(.*)', '/sign-up(.*)'])
 
-export default function middleware(req: NextRequest, event: NextFetchEvent) {
-  if (isPublicRoute(req.nextUrl.pathname)) {
-    return NextResponse.next()
-  }
-  return clerkMiddleware()(req, event)
-}
+export default clerkMiddleware((auth, request) => {
+  // if (isPublicRoute(request)) {
+  //   return
+  // }
+  // const { userId } = auth()
+  // if (!userId) {
+  //   const signInUrl = new URL('/sign-in', request.url)
+  //   signInUrl.searchParams.set('redirect_url', request.url)
+  //   return NextResponse.redirect(signInUrl)
+  // }
+  // auth().protect()
+}, {})
 
 export const config = {
   debug: true,

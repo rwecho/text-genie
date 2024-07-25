@@ -11,11 +11,14 @@ import {
   DownOutlined,
 } from '@ant-design/icons'
 import type { MenuProps } from 'antd'
-import { useState } from 'react'
+import { KeyboardEvent, useState } from 'react'
 import { useRouter } from 'next/navigation'
+
+import { llms } from '@/services/model'
 
 import {
   ClerkProvider,
+  SignIn,
   SignInButton,
   SignedIn,
   SignedOut,
@@ -39,75 +42,32 @@ const HomePage = () => {
   } = theme.useToken()
 
   const router = useRouter()
-  const [current, setCurrent] = useState('Gemini-1.5-Flash')
+  const [current, setCurrent] = useState('Gemini 1.5 Flash')
   const [sendLoading, setSendLoading] = useState(false)
   const [question, setQuestion] = useState<string>()
 
-  const items: MenuProps['items'] = [
-    {
-      key: 'openai',
-      type: 'group',
-      label: 'openai',
-      children: [
-        {
-          key: 'GPT-4o',
-          label: 'GPT-4o',
-          onClick: () => {
-            setCurrent('GPT-4o')
-          },
-        },
-        {
-          key: 'GPT-4',
-          label: 'GPT-4',
-          onClick: () => {
-            setCurrent('GPT-4')
-          },
-        },
-      ],
-    },
-    {
-      key: 'google',
-      label: 'google',
-      type: 'group',
-      children: [
-        {
-          key: 'Gemini-1.5-Flash',
-          label: 'Gemini 1.5 Flash',
-          onClick: () => {
-            setCurrent('Gemini-1.5-Flash')
-          },
-        },
-        {
-          key: 'Gemini-1.5-Pro',
-          label: 'Gemini 1.5 Pro',
-          onClick: () => {
-            setCurrent('Gemini-1.5-Pro')
-          },
-        },
-      ],
-    },
-    {
-      key: 'claude',
-      label: 'claude',
-      type: 'group',
-      children: [
-        {
-          key: 'Claude-3-Haiku',
-          label: 'Claude 3 Haiku',
-          onClick: () => {
-            setCurrent('Claude-3-Haiku')
-          },
-        },
-        {
-          key: 'Claude-3.5-Sonnet',
-          label: 'Claude 3.5 Sonnet',
-          onClick: () => {
-            setCurrent('Claude-3.5-Sonnet')
-          },
-        },
-      ],
-    },
-  ]
+  const items: MenuProps['items'] = Object.entries(
+    Object.groupBy(llms, ({ group }) => group),
+  ).map(([group, models]) => ({
+    label: group,
+    key: group,
+    type: 'group',
+    children: models!.map((model) => ({
+      key: model.name,
+      label: model.name,
+      onClick: () => {
+        setCurrent(model.name)
+      },
+    })),
+  }))
+
+  const handleTextAreaKeyDown = async (
+    e: KeyboardEvent<HTMLTextAreaElement>,
+  ) => {
+    if (e.ctrlKey && e.key === 'Enter') {
+      await handleSend()
+    }
+  }
 
   const handleSend = async () => {
     if (!question) {
@@ -127,10 +87,6 @@ const HomePage = () => {
       if (!response.ok) {
         return
       }
-
-      // delay for 3 seconds
-      await new Promise((resolve) => setTimeout(resolve, 3000))
-
       const data = await response.json()
       const threadId = data.threadId
       if (!threadId) {
@@ -168,12 +124,12 @@ const HomePage = () => {
           items={menuRightItems}
         />
 
-        <SignedOut>
-          <SignInButton />
+        {/* <SignedOut>
+          <SignInButton mode="modal" />
         </SignedOut>
         <SignedIn>
           <UserButton />
-        </SignedIn>
+        </SignedIn> */}
       </Header>
       <Content
         className="!p-4"
@@ -193,6 +149,7 @@ const HomePage = () => {
               placeholder="知识的整理从一个问题开始..."
               value={question}
               onChange={(e) => setQuestion(e.target.value)}
+              onKeyDown={(e) => handleTextAreaKeyDown(e)}
             ></TextArea>
             <Flex className="z-10 relative">
               <Button
@@ -202,6 +159,7 @@ const HomePage = () => {
                 onClick={handleSend}
                 loading={sendLoading}
               >
+                <span className="text-sm text-gray-400">Ctrl+Enter</span>
                 <SendOutlined></SendOutlined>
               </Button>
             </Flex>
