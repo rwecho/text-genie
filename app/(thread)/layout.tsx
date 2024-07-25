@@ -37,7 +37,7 @@ export default function RootLayout({
           top: 0,
           borderRight: '1px solid #f0f0f0',
         }}
-        theme='light'
+        theme="light"
         trigger={null}
         collapsible
         collapsed={collapsed}
@@ -49,42 +49,42 @@ export default function RootLayout({
           }}
         >
           <Button
-            type='link'
-            className='!text-gray-800'
+            type="link"
+            className="!text-gray-800"
             style={{
               height: 'auto',
             }}
           >
-            <Space className='justify-center my-4'>
+            <Space className="justify-center my-4">
               <img
-                src='https://gw.alipayobjects.com/zos/rmsportal/KDpgvguMpGfqaHPjicRK.svg'
-                alt='logo'
+                src="https://gw.alipayobjects.com/zos/rmsportal/KDpgvguMpGfqaHPjicRK.svg"
+                alt="logo"
                 style={{
                   height: '32px',
                 }}
               />
               {!collapsed && (
-                <span className='ms-4 text-xl font-semibold'>文字助手</span>
+                <span className="ms-4 text-xl font-semibold">文字助手</span>
               )}
             </Space>
           </Button>
           <Menu
-            theme='light'
-            mode='inline'
+            theme="light"
+            mode="inline"
             defaultSelectedKeys={['1']}
             style={{
               border: 0,
             }}
             items={[
-              {
-                key: 'notes',
-                icon: <EditOutlined />,
-                label: <a href='/n/'>Notes</a>,
-              },
+              // {
+              //   key: 'notes',
+              //   icon: <EditOutlined />,
+              //   label: <a href="/n/">Notes</a>,
+              // },
               {
                 key: 'collections',
                 icon: <HistoryOutlined />,
-                label: <a href='/t/'>Collections</a>,
+                label: <a href="/t/">Collections</a>,
               },
             ]}
           />
@@ -94,30 +94,32 @@ export default function RootLayout({
               marginTop: 'auto',
               border: 0,
             }}
-            theme='light'
-            mode='inline'
+            theme="light"
+            mode="inline"
             selectable={false}
-            items={[
-              {
-                key: 'Upgrade-to-Pro',
-                icon: <RocketOutlined className='!text-red-600 rotate-45 ' />,
-                label: (
-                  <div className='flex flex-col space-y-0'>
-                    <span
-                      style={{
-                        height: 'auto',
-                      }}
-                    >
-                      Upgrade to Pro
-                    </span>
-                  </div>
-                ),
-                style: {
-                  height: 'auto',
-                },
-                onClick: handleUpgrade,
-              },
-            ]}
+            items={
+              [
+                // {
+                //   key: 'Upgrade-to-Pro',
+                //   icon: <RocketOutlined className='!text-red-600 rotate-45 ' />,
+                //   label: (
+                //     <div className='flex flex-col space-y-0'>
+                //       <span
+                //         style={{
+                //           height: 'auto',
+                //         }}
+                //       >
+                //         Upgrade to Pro
+                //       </span>
+                //     </div>
+                //   ),
+                //   style: {
+                //     height: 'auto',
+                //   },
+                //   onClick: handleUpgrade,
+                // },
+              ]
+            }
           />
         </Flex>
       </Sider>
@@ -128,11 +130,11 @@ export default function RootLayout({
         }}
       >
         <Header
-          className='!px-4 !py-0 flex items-center '
+          className="!px-4 !py-0 flex items-center "
           style={{ background: colorBgContainer }}
         >
           <Button
-            type='text'
+            type="text"
             icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
             onClick={() => setCollapsed(!collapsed)}
             style={{
@@ -140,20 +142,20 @@ export default function RootLayout({
             }}
           />
 
-          <Space className='!ml-auto'>
+          <Space className="!ml-auto">
             {/* avatar */}
-            <Button
-              className='!text-gray-600'
-              size='small'
-              type='link'
+            {/* <Button
+              className="!text-gray-600"
+              size="small"
+              type="link"
               icon={<EditOutlined />}
             >
               Go to Note
-            </Button>
+            </Button> */}
             <Button
-              className='!text-gray-600'
-              size='small'
-              type='link'
+              className="!text-gray-600"
+              size="small"
+              type="link"
               icon={<ShareAltOutlined />}
             >
               Share
