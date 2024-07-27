@@ -15,6 +15,7 @@ export async function GET(
   const thread = await prisma.thread.findUnique({
     where: {
       id: threadId,
+      isDeleted: false,
     },
     include: {
       qaList: {
@@ -92,6 +93,24 @@ export async function POST(
       'Content-Type': 'text/event-stream',
     },
   })
+}
+
+export async function DELETE(
+  request: NextRequest,
+  context: { params: { id: string } },
+) {
+  const threadId = context.params.id
+
+  await prisma.thread.update({
+    where: {
+      id: threadId,
+    },
+    data: {
+      isDeleted: true,
+    },
+  })
+
+  return new Response('Thread deleted', { status: 200 })
 }
 
 function iteratorToStream(iterators: any[]) {

@@ -38,6 +38,9 @@ export async function GET(request: NextRequest, context: {}) {
   const skip = skipParam ? parseInt(skipParam) : 0
 
   const threads = await prisma.thread.findMany({
+    where: {
+      isDeleted: false,
+    },
     include: {
       qaList: {
         include: {
@@ -53,7 +56,9 @@ export async function GET(request: NextRequest, context: {}) {
   })
 
   const totalCount = await prisma.thread.count({
-    where: {},
+    where: {
+      isDeleted: false,
+    },
   })
 
   return new Response(

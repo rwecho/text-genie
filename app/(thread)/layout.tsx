@@ -296,7 +296,6 @@ export default function RootLayout({
             style={{
               minHeight: 280,
               background: colorBgContainer,
-              borderRadius: borderRadiusLG,
             }}
           >
             {children}
