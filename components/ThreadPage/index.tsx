@@ -12,59 +12,30 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { fetchEventSource } from '@microsoft/fetch-event-source'
 import { SendOutlined } from '@ant-design/icons'
 import { KeyboardEvent } from 'react'
+import { Thread } from '@/types/thread'
 
 const { TextArea } = Input
 
-interface AnswerSource {
-  Link: string
-}
-
-interface Question {
-  Id?: string
-  Content: string
-  Time: Date
-}
-
-interface Answer {
-  Id?: string
-  Content: string
-  Time: Date
-  Duration?: number
-  Sources?: AnswerSource[]
-}
-
-interface QA {
-  Question: Question
-  Answer?: Answer
-}
-
-interface Thread {
-  Id: string
-  QAList: QA[]
-  Related: string[]
-}
-
 const ThreadPage = (props: { id: string }) => {
+  const threadId = props.id
   const [input, setInput] = useState<string>()
-  const [thread, setThread] = useState<Thread>({
-    Id: '',
-    QAList: [],
-    Related: [],
-  })
-
+  const [thread, setThread] = useState<Thread>()
+  const [related, setRelated] = useState<string[]>()
   const [generating, setGenerating] = useState(false)
 
   const appendMessage = useCallback(
     async (message: string, abortController: AbortController) => {
-      const url = '/api/m'
+      const url = `/api/t/${threadId}`
       await fetchEventSource(url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          content: message,
-        }),
+        body: message
+          ? JSON.stringify({
+              question: message,
+            })
+          : '{}',
         onclose: () => {
           setGenerating(false)
         },
@@ -73,88 +44,86 @@ const ThreadPage = (props: { id: string }) => {
           console.log(event)
           setGenerating(true)
           switch (event.event) {
-            case 'threadId':
+            case 'qa':
               setThread((o) => {
-                return {
-                  ...o,
-                  Id: event.data,
+                if (!o) throw new Error('thread is not defined')
+                const { id, question } = JSON.parse(event.data)
+                const list = [...o.qaList]
+                const [lastQa] = list.slice(-1)
+                if (lastQa.answer) {
+                  list.push({
+                    id: id,
+                    question: question,
+                    questionAt: new Date(),
+                    sources: [],
+                  })
+                } else {
+                  lastQa.id = id
                 }
-              })
-              break
-            case 'question':
-              setThread((o) => {
-                const list = [
-                  ...o.QAList,
-                  {
-                    Question: {
-                      Content: event.data,
-                      Time: new Date(),
-                    } as Question,
-                  },
-                ]
+
                 return {
                   ...o,
-                  QAList: list,
+                  qaList: list,
                 }
               })
               break
             case 'answer':
               setThread((o) => {
-                const list = [...o.QAList]
+                if (!o) throw new Error('thread is not defined')
+                const list = [...o.qaList]
                 const [lastQa] = list.slice(-1)
-                if (!lastQa.Answer) {
-                  lastQa.Answer = {
-                    Content: '',
-                    Time: new Date(),
-                  }
+                if (!lastQa.answer) {
+                  lastQa.answer = ''
                 }
-                lastQa.Answer.Content += event.data
+                lastQa.answer += event.data
                 return {
                   ...o,
-                  QAList: list,
+                  qaList: list,
                 }
               })
 
               break
             case 'sources':
               setThread((o) => {
-                const list = [...o.QAList]
+                if (!o) throw new Error('thread is not defined')
+
+                const list = [...o.qaList]
                 const [lastQa] = list.slice(-1)
-                if (!lastQa.Answer) {
-                  lastQa.Answer = {
-                    Content: '',
-                    Time: new Date(),
-                  }
-                }
-                lastQa.Answer.Sources = JSON.parse(event.data).map(
-                  (link: string) => {
-                    return {
-                      Link: link,
-                    }
-                  },
-                )
-                return { ...o, QAList: list }
+
+                lastQa.sources = JSON.parse(event.data)
+                return { ...o, qaList: list }
               })
               break
             case 'related':
-              setThread((o) => {
-                return { ...o, Related: JSON.parse(event.data) }
-              })
+              setRelated(JSON.parse(event.data))
               break
           }
         },
       })
     },
-    [],
+    [threadId],
   )
 
   useEffect(() => {
     const abortController = new AbortController()
-    appendMessage('hello world', abortController)
+    const load = async () => {
+      const response = await fetch(`/api/t/${threadId}`)
+      const thread: Thread = await response.json()
+      setThread(thread)
+      const [lastQa] = thread.qaList.slice(-1)
+
+      if (!lastQa.answer) {
+        appendMessage('', abortController)
+      }
+    }
+
+    console.log('ThreadPage useEffect')
+    load()
+
     return () => {
       abortController.abort()
     }
-  }, [appendMessage])
+  }, [appendMessage, threadId])
 
   const handleAppendQuestion = async () => {
     if (!input) {
@@ -184,68 +153,82 @@ const ThreadPage = (props: { id: string }) => {
       gap={'middle'}
       className="relative container mx-auto h-auto max-w-lg py-6 px-8 md:px-32 md:max-w-6xl"
     >
-      {thread.QAList.map((qa, index) => {
-        return (
-          <Flex key={index} vertical gap={'large'}>
-            {index > 0 && <Divider className="!my-4"></Divider>}
-            {/* title */}
-            <h1 className="text-2xl font-semibold">{qa.Question.Content}</h1>
+      {thread &&
+        thread.qaList.map((qa, index) => {
+          return (
+            <Flex key={index} vertical gap={'large'}>
+              {index > 0 && <Divider className="!my-4"></Divider>}
+              {/* title */}
+              <h1 className="text-2xl font-semibold">{qa.question}</h1>
 
-            {/* answer paragrah */}
+              {/* answer paragrah */}
 
-            <Flex vertical gap={'middle'}>
-              <Space className="text-lg font-semibold">
-                <AimOutlined />
-                Answer
-              </Space>
+              <Flex
+                vertical
+                gap={'middle'}
+                className="overflow-hidden overflow-wrap"
+              >
+                <Space className="text-lg font-semibold">
+                  <AimOutlined />
+                  Answer
+                </Space>
 
-              <p className="text-lg">{qa.Answer?.Content}</p>
+                <p
+                  className="text-lg"
+                  style={{
+                    overflowWrap: 'break-word',
+                  }}
+                >
+                  {qa.answer}
+                </p>
 
-              <AnswerActions></AnswerActions>
+                <AnswerActions></AnswerActions>
+              </Flex>
+
+              <Flex vertical gap={'middle'}>
+                <Space className="text-lg font-semibold">
+                  <LinkOutlined />
+                  Source
+                </Space>
+                <Space wrap>
+                  {qa.sources &&
+                    qa.sources.map((source, index) => (
+                      <SourceCard key={index} url={source.link} />
+                    ))}
+                </Space>
+              </Flex>
             </Flex>
+          )
+        })}
 
-            <Flex vertical gap={'middle'}>
-              <Space className="text-lg font-semibold">
-                <LinkOutlined />
-                Source
-              </Space>
-              <Space wrap>
-                {qa.Answer?.Sources &&
-                  qa.Answer.Sources.map((source, index) => (
-                    <SourceCard key={index} url={source.Link} />
-                  ))}
-              </Space>
-            </Flex>
+      {related && related.length > 0 && (
+        <Flex vertical gap={'middle'}>
+          <Space className="text-lg font-semibold">
+            <DisconnectOutlined />
+            Related
+          </Space>
+          <Flex vertical className="w-full" gap={'middle'}>
+            {related.map((related, index) => (
+              <Button
+                key={index}
+                size="large"
+                className="w-full"
+                type="default"
+                icon={<PlusOutlined />}
+                iconPosition="end"
+                styles={{
+                  icon: {
+                    marginLeft: 'auto',
+                  },
+                }}
+                onClick={() => handleRelated(related)}
+              >
+                {related}
+              </Button>
+            ))}
           </Flex>
-        )
-      })}
-
-      <Flex vertical gap={'middle'}>
-        <Space className="text-lg font-semibold">
-          <DisconnectOutlined />
-          Related
-        </Space>
-        <Flex vertical className="w-full" gap={'middle'}>
-          {thread.Related.map((related, index) => (
-            <Button
-              key={index}
-              size="large"
-              className="w-full"
-              type="default"
-              icon={<PlusOutlined />}
-              iconPosition="end"
-              styles={{
-                icon: {
-                  marginLeft: 'auto',
-                },
-              }}
-              onClick={() => handleRelated(related)}
-            >
-              {related}
-            </Button>
-          ))}
         </Flex>
-      </Flex>
+      )}
       <Flex vertical className="bottom-4 pt-4 left-0 w-full sticky">
         <div className="relative w-full">
           <TextArea
@@ -269,7 +252,7 @@ const ThreadPage = (props: { id: string }) => {
         </div>
       </Flex>
 
-      <FloatButton.BackTop>hello world</FloatButton.BackTop>
+      <FloatButton.BackTop></FloatButton.BackTop>
     </Flex>
   )
 }

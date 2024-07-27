@@ -3,7 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "postinstall": "prisma generate",
+    "dev": "next dev  -H 0.0.0.0",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
@@ -12,6 +13,7 @@
     "@ant-design/nextjs-registry": "^1.0.0",
     "@clerk/nextjs": "^5.2.3",
     "@microsoft/fetch-event-source": "^2.0.1",
+    "@prisma/client": "^5.17.0",
     "antd": "^5.19.1",
     "next": "14.2.5",
     "react": "^18",
@@ -25,6 +27,7 @@
     "eslint": "^8",
     "eslint-config-next": "14.2.5",
     "postcss": "^8",
+    "prisma": "^5.17.0",
     "tailwindcss": "^3.4.1",
     "typescript": "^5"
   }

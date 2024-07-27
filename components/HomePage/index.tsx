@@ -46,20 +46,20 @@ const HomePage = () => {
   const [sendLoading, setSendLoading] = useState(false)
   const [question, setQuestion] = useState<string>()
 
-  const items: MenuProps['items'] = Object.entries(
-    Object.groupBy(llms, ({ group }) => group),
-  ).map(([group, models]) => ({
-    label: group,
-    key: group,
-    type: 'group',
-    children: models!.map((model) => ({
-      key: model.name,
-      label: model.name,
-      onClick: () => {
-        setCurrent(model.name)
-      },
-    })),
-  }))
+  // const items: MenuProps['items'] = Object.entries(
+  //   Object.groupBy(llms, ({ group }) => group),
+  // ).map(([group, models]) => ({
+  //   label: group,
+  //   key: group,
+  //   type: 'group',
+  //   children: models!.map((model) => ({
+  //     key: model.name,
+  //     label: model.name,
+  //     onClick: () => {
+  //       setCurrent(model.name)
+  //     },
+  //   })),
+  // }))
 
   const handleTextAreaKeyDown = async (
     e: KeyboardEvent<HTMLTextAreaElement>,
@@ -88,11 +88,7 @@ const HomePage = () => {
         return
       }
       const data = await response.json()
-      const threadId = data.threadId
-      if (!threadId) {
-        return
-      }
-      router.push(`/t/${threadId}`)
+      router.push(`/t/${data.id}`)
     } finally {
       setSendLoading(false)
     }
@@ -108,14 +104,14 @@ const HomePage = () => {
         className="!px-4 flex items-center"
         style={{ background: colorBgContainer }}
       >
-        <Dropdown menu={{ items }}>
+        {/* <Dropdown menu={{ items }}>
           <a className="!text-gray-600" onClick={(e) => e.preventDefault()}>
             <Space>
               {current}
               <DownOutlined />
             </Space>
           </a>
-        </Dropdown>
+        </Dropdown> */}
 
         <Menu
           className="!ml-auto !border-0"

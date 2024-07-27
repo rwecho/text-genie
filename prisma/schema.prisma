@@ -1,0 +1,39 @@
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+model Thread {
+    id        String   @id @default(cuid())
+    createdAt DateTime @default(now())
+    createdBy String?
+    updatedAt DateTime @updatedAt
+    updatedBy String?
+    isDeleted Boolean  @default(false)
+    qaList    QA[]
+}
+
+model QA {
+    id         String         @id @default(cuid())
+    thread     Thread         @relation(fields: [threadId], references: [id])
+    threadId   String
+    question   String
+    questionAt DateTime       @default(now())
+    answer     String?
+    answerAt   DateTime?
+    duration   Int?
+    sources    AnswerSource[]
+}
+
+model AnswerSource {
+    id          String  @id @default(cuid())
+    qa          QA      @relation(fields: [qaId], references: [id])
+    qaId        String
+    link        String
+    title       String
+    description String?
+}
