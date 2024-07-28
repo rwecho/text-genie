@@ -9,23 +9,31 @@ import {
   Skeleton,
   message,
   Popconfirm,
+  Input,
 } from 'antd'
 import InfiniteScroll from 'react-infinite-scroll-component'
 import { Thread } from '@/types/thread'
 import { BookOutlined, DeleteOutlined } from '@ant-design/icons'
 
+const { Search } = Input
+
 const ThreadsPage = () => {
   const [page, setPage] = useState(0)
+  const [searchText, setSearchText] = useState('')
+  const [searching, setSearching] = useState(false)
   const [totalThreads, setTotalThreads] = useState<Thread[]>([])
   const { threads, totalCount, loading, error, totalPage } = usePagedThreads(
     page,
     10,
+    searchText,
   )
   useEffect(() => {
     if (threads) {
       setTotalThreads((o) => {
         return [...o, ...threads]
       })
+
+      console.log(threads)
     }
   }, [threads])
 
@@ -49,6 +57,17 @@ const ThreadsPage = () => {
     }
   }
 
+  const handleSearch = async (value: string) => {
+    try {
+      setSearching(true)
+      setSearchText(value)
+      setTotalThreads([])
+    } catch (error) {
+    } finally {
+      setSearching(false)
+    }
+  }
+
   return (
     <div
       id="scrollableDiv"
@@ -57,6 +76,12 @@ const ThreadsPage = () => {
         height: 'calc(100vh - 100px)',
       }}
     >
+      <Search
+        onSearch={handleSearch}
+        placeholder="Search your threads..."
+        loading={searching}
+        allowClear
+      ></Search>
       <InfiniteScroll
         dataLength={totalThreads.length}
         next={loadMoreData}

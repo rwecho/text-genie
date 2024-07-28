@@ -32,14 +32,23 @@ export async function GET(request: NextRequest, context: {}) {
   const takeParam = request.nextUrl.searchParams.get('take')
   const orderByParam = request.nextUrl.searchParams.get('orderBy')
   const skipParam = request.nextUrl.searchParams.get('skip')
+  const searchParam = request.nextUrl.searchParams.get('search')
 
   const take = takeParam ? parseInt(takeParam) : 10
   const orderBy = orderByParam ? orderByParam : 'createAt'
   const skip = skipParam ? parseInt(skipParam) : 0
+  const search = searchParam ? searchParam : ''
 
   const threads = await prisma.thread.findMany({
     where: {
       isDeleted: false,
+      qaList: {
+        some: {
+          question: {
+            contains: search,
+          },
+        },
+      },
     },
     include: {
       qaList: {
@@ -58,6 +67,13 @@ export async function GET(request: NextRequest, context: {}) {
   const totalCount = await prisma.thread.count({
     where: {
       isDeleted: false,
+      qaList: {
+        some: {
+          question: {
+            contains: search,
+          },
+        },
+      },
     },
   })
 

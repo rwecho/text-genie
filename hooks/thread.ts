@@ -31,7 +31,11 @@ export const useTopThreads = () => {
   }
 }
 
-export const usePagedThreads = (page: number, pageSize: number) => {
+export const usePagedThreads = (
+  page: number,
+  pageSize: number,
+  searchText?: string,
+) => {
   const [loading, setLoading] = useState(true)
   const [threads, setThreads] = useState<Thread[]>()
   const [totalCount, setTotalCount] = useState<number>()
@@ -46,7 +50,9 @@ export const usePagedThreads = (page: number, pageSize: number) => {
         }
 
         const response = await fetch(
-          `/api/t?skip=${page * pageSize}&take=${pageSize}&orderBy=createdAt`,
+          `/api/t?skip=${
+            page * pageSize
+          }&take=${pageSize}&orderBy=createdAt&search=${searchText}`,
         )
         const { items, totalCount } = await response.json()
         console.log(items)
@@ -61,7 +67,7 @@ export const usePagedThreads = (page: number, pageSize: number) => {
       }
     }
     load()
-  }, [page, pageSize])
+  }, [page, pageSize, searchText])
 
   return {
     loading,
