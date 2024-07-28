@@ -13,7 +13,7 @@ const SourceCard = (props: { url: string }) => {
 
   return (
     <Card hoverable onClick={() => handleSourceClick(url)}>
-      <Meta title="Europe Street beat" description={url} />
+      <Meta title="Europe Street beat" description={<div>{url}</div>} />
     </Card>
   )
 }

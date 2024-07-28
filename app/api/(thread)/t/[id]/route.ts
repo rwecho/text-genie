@@ -133,45 +133,38 @@ function iteratorToStream(iterators: any[]) {
 }
 
 async function* makeSources(thread: Thread, qaId: string) {
-  yield* makeEvent(
-    'sources',
-    JSON.stringify([
-      'www.baidu.com',
-      'www.google.com',
-      'www.bing.com',
-      'www.yahoo.com',
-      'www.daum.net',
-    ]),
-  )
+  const sources = [
+    {
+      qaId: qaId,
+      link: 'www.baidu.com',
+      title: 'Baidu',
+    },
+    {
+      qaId: qaId,
+      link: 'www.google.com',
+      title: 'Google',
+    },
+    {
+      qaId: qaId,
+      link: 'www.bing.com',
+      title: 'Bing',
+    },
+    {
+      qaId: qaId,
+      link: 'www.yahoo.com',
+      title: 'Yahoo',
+    },
+    {
+      qaId: qaId,
+      link: 'www.daum.net',
+      title: 'Daum',
+    },
+  ]
+
+  yield* makeEvent('sources', JSON.stringify(sources))
 
   await prisma.answerSource.createMany({
-    data: [
-      {
-        qaId: qaId,
-        link: 'www.baidu.com',
-        title: 'Baidu',
-      },
-      {
-        qaId: qaId,
-        link: 'www.google.com',
-        title: 'Google',
-      },
-      {
-        qaId: qaId,
-        link: 'www.bing.com',
-        title: 'Bing',
-      },
-      {
-        qaId: qaId,
-        link: 'www.yahoo.com',
-        title: 'Yahoo',
-      },
-      {
-        qaId: qaId,
-        link: 'www.daum.net',
-        title: 'Daum',
-      },
-    ],
+    data: sources,
   })
 }
 

@@ -89,7 +89,6 @@ const ThreadPage = (props: { id: string }) => {
 
                 const list = [...o.qaList]
                 const [lastQa] = list.slice(-1)
-
                 lastQa.sources = JSON.parse(event.data)
                 return { ...o, qaList: list }
               })
