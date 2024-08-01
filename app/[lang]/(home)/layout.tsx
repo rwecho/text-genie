@@ -99,7 +99,11 @@ export default function RootLayout({
         key: thread.id,
         label: (
           <>
-            <Link href={`/t/${thread.id}`}>{thread.qaList[0].question}</Link>
+            <Link href={`/t/${thread.id}`} className="relative peer">
+              <Flex justify="space-between">
+                <span>{thread.qaList[0].question}</span>
+              </Flex>
+            </Link>
           </>
         ),
       }
