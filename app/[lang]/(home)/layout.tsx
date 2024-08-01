@@ -1,23 +1,46 @@
 'use client'
 
-import { Button, Menu, Flex, Layout, theme, Space, Modal, Input } from 'antd'
-import { useEffect, useMemo, useState } from 'react'
+import {
+  Button,
+  Menu,
+  Flex,
+  Layout,
+  theme,
+  Space,
+  Modal,
+  Spin,
+  message,
+  Dropdown,
+  MenuProps,
+} from 'antd'
+import {
+  startTransition,
+  useEffect,
+  useMemo,
+  useState,
+  useTransition,
+} from 'react'
 import {
   MenuFoldOutlined,
   MenuUnfoldOutlined,
   ShareAltOutlined,
   HistoryOutlined,
-  EditOutlined,
-  RocketOutlined,
   PlusOutlined,
   HomeOutlined,
-  SendOutlined,
+  DownOutlined,
+  SmileOutlined,
 } from '@ant-design/icons'
-import { useRouter } from 'next/navigation'
-import { useTopThreads } from '@/hooks/thread'
+// import { useRouter } from 'next/navigation'
+import { usePathname, useRouter } from '@/services/navigation'
+import { useTopThreadsStore } from '@/store/thread'
+import Link from 'next/link'
+import Image from 'next/image'
+import SearchInput from '@/components/SearchInput'
+import { createThread } from '@/services/thread'
+import { useParams } from 'next/navigation'
+import { useLocale, useTranslations } from 'next-intl'
 
-const { Header, Content, Footer, Sider } = Layout
-const { TextArea } = Input
+const { Header, Content, Sider } = Layout
 
 export default function RootLayout({
   children,
@@ -25,100 +48,91 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   const {
-    token: { colorBgContainer, borderRadiusLG, margin },
+    token: { colorBgContainer },
   } = theme.useToken()
+
+  const t = useTranslations('HomePage')
 
   const [isModalOpen, setIsModalOpen] = useState(false)
   const router = useRouter()
 
   const [collapsed, setCollapsed] = useState(false)
+  const { topThreads, load, loading, error } = useTopThreadsStore()
+  const locale = useLocale()
+  const pathname = usePathname()
+  const params = useParams()
+  useEffect(() => {
+    load()
+  }, [load])
 
-  const [question, setQuestion] = useState<string>()
-
-  const [sendLoading, setSendLoading] = useState(false)
-
-  const {
-    loading: topThreadsLoading,
-    threads: topThreads,
-    totalCount,
-    error,
-  } = useTopThreads()
+  const languageItems: MenuProps['items'] = [
+    {
+      key: 'en',
+      label: <>English</>,
+      onClick: () => {
+        startTransition(() => {
+          const currentFullPath = pathname + window.location.search
+          debugger
+          router.replace(currentFullPath, { locale: 'en' })
+        })
+      },
+    },
+    {
+      key: 'cn',
+      label: <>简体中文</>,
+      onClick: () => {
+        startTransition(() => {
+          const currentFullPath = pathname + window.location.search
+          router.replace(currentFullPath, { locale: 'cn' })
+        })
+      },
+    },
+  ]
 
   const collections = useMemo(() => {
-    if (!topThreads || !totalCount) {
+    if (!topThreads) {
       return []
     }
 
-    var items = topThreads.map((thread, index) => {
+    var items = topThreads.map((thread) => {
       return {
         key: thread.id,
-        label: <a href={`/t/${thread.id}`}>{thread.qaList[0].question}</a>,
+        label: (
+          <>
+            <Link href={`/t/${thread.id}`}>{thread.qaList[0].question}</Link>
+          </>
+        ),
       }
     })
-
-    if (totalCount > 5) {
+    if (topThreads.length >= 5) {
       items.push({
         key: 'more',
-        label: <a href="/t">More ...</a>,
+        label: <Link href="/t">{t('more')}...</Link>,
       })
     }
     return items
-  }, [topThreads, totalCount])
-
-  const handleUpgrade = () => {
-    console.log('Upgrade to Pro')
-  }
+  }, [t, topThreads])
 
   const handleNewThread = () => {
-    // popup a modal to create a new thread
     setIsModalOpen(true)
-  }
-
-  const handleOk = () => {
-    setIsModalOpen(false)
   }
 
   const handleCancel = () => {
     setIsModalOpen(false)
   }
 
-  const handleTextAreaKeyDown = (
-    e: React.KeyboardEvent<HTMLTextAreaElement>,
-  ) => {
-    if (e.key === 'Enter' && e.ctrlKey) {
-      handleSend()
-    }
+  const handleShare = () => {
+    navigator.clipboard.writeText(window.location.href)
+    message.success('Link copied to clipboard')
   }
 
-  const handleSend = async () => {
+  const handleQuestionSending = async (question: string) => {
     if (!question) {
       return
     }
 
-    try {
-      setSendLoading(true)
-
-      setIsModalOpen(false)
-
-      const response = await fetch('/api/t', {
-        method: 'POST',
-        body: JSON.stringify({
-          question,
-          // engine: current,
-        }),
-      })
-
-      if (!response.ok) {
-        return
-      }
-      const data = await response.json()
-
-      setQuestion('')
-
-      router.push(`/t/${data.id}`)
-    } finally {
-      setSendLoading(false)
-    }
+    const thread = await createThread(question)
+    router.push(`/t/${thread.id}`)
   }
 
   useEffect(() => {
@@ -151,12 +165,7 @@ export default function RootLayout({
           collapsible
           collapsed={collapsed}
         >
-          <Flex
-            vertical
-            style={{
-              height: '100%',
-            }}
-          >
+          <Flex vertical>
             <Button
               type="link"
               className="!text-gray-800"
@@ -165,12 +174,11 @@ export default function RootLayout({
               }}
             >
               <Space className="justify-center my-4">
-                <img
+                <Image
                   src="https://gw.alipayobjects.com/zos/rmsportal/KDpgvguMpGfqaHPjicRK.svg"
                   alt="logo"
-                  style={{
-                    height: '32px',
-                  }}
+                  width={32}
+                  height={32}
                 />
                 {!collapsed && (
                   <span className="ms-4 text-xl font-semibold">文字助手</span>
@@ -192,7 +200,7 @@ export default function RootLayout({
                 icon={<PlusOutlined />}
                 onClick={handleNewThread}
               >
-                <span>New Thread</span>
+                <span>{t('newThread')}</span>
                 <span className="text-xs text-gray-400">⌘+K</span>
               </Button>
             )}
@@ -204,21 +212,29 @@ export default function RootLayout({
               style={{
                 border: 0,
               }}
+              defaultOpenKeys={['collections']}
               items={[
                 {
                   key: 'home',
                   icon: <HomeOutlined />,
-                  label: <a href="/">Home</a>,
+                  label: <Link href="/">{t('home')}</Link>,
                 },
                 {
                   key: 'collections',
                   icon: <HistoryOutlined />,
-                  label: <span>Collections</span>,
+                  label: (
+                    <>
+                      <span>
+                        {t('collections')}
+                        {loading && <Spin size="small"></Spin>}
+                      </span>
+                      {error && message.error('Failed to load collections')}
+                    </>
+                  ),
                   children: collections,
                 },
               ]}
             />
-
             <Menu
               style={{
                 marginTop: 'auto',
@@ -227,34 +243,13 @@ export default function RootLayout({
               theme="light"
               mode="inline"
               selectable={false}
-              items={
-                [
-                  // {
-                  //   key: 'Upgrade-to-Pro',
-                  //   icon: <RocketOutlined className='!text-red-600 rotate-45 ' />,
-                  //   label: (
-                  //     <div className='flex flex-col space-y-0'>
-                  //       <span
-                  //         style={{
-                  //           height: 'auto',
-                  //         }}
-                  //       >
-                  //         Upgrade to Pro
-                  //       </span>
-                  //     </div>
-                  //   ),
-                  //   style: {
-                  //     height: 'auto',
-                  //   },
-                  //   onClick: handleUpgrade,
-                  // },
-                ]
-              }
+              items={[]}
             />
           </Flex>
         </Sider>
         <Layout
           style={{
+            minHeight: '100vh',
             marginLeft: collapsed ? 80 : 200,
             transition: 'margin-left 0.2s',
           }}
@@ -273,28 +268,28 @@ export default function RootLayout({
             />
 
             <Space className="!ml-auto">
-              {/* avatar */}
-              {/* <Button
-              className="!text-gray-600"
-              size="small"
-              type="link"
-              icon={<EditOutlined />}
-            >
-              Go to Note
-            </Button> */}
+              <Dropdown menu={{ items: languageItems }}>
+                <a onClick={(e) => e.preventDefault()}>
+                  <Space>
+                    {locale === 'en' ? 'English' : '简体中文'}
+                    <DownOutlined />
+                  </Space>
+                </a>
+              </Dropdown>
+
               <Button
                 className="!text-gray-600"
                 size="small"
                 type="link"
                 icon={<ShareAltOutlined />}
+                onClick={handleShare}
               >
-                Share
+                {t('share')}
               </Button>
             </Space>
           </Header>
           <Content
             style={{
-              minHeight: 280,
               background: colorBgContainer,
             }}
           >
@@ -304,35 +299,15 @@ export default function RootLayout({
       </Layout>
 
       <Modal
-        title="查询、搜集、整理我们的知识库"
+        title={t('searchTitle')}
         open={isModalOpen}
         footer={null}
         onCancel={handleCancel}
       >
-        <div className="mt-4 p-2  relative">
-          <TextArea
-            autoFocus
-            className="!border-0 !text-md z-10 peer focus:!border-0 focus:!shadow-none focus-within:!border-0 focus-within:!shadow-none"
-            autoSize={{ minRows: 2, maxRows: 6 }}
-            placeholder="知识的整理从一个问题开始..."
-            value={question}
-            onChange={(e) => setQuestion(e.target.value)}
-            onKeyDown={(e) => handleTextAreaKeyDown(e)}
-          ></TextArea>
-          <Flex className="z-10 relative">
-            <Button
-              className="ml-auto"
-              type="text"
-              disabled={!question}
-              onClick={handleSend}
-              loading={sendLoading}
-            >
-              <span className="text-sm text-gray-400">Ctrl+Enter</span>
-              <SendOutlined></SendOutlined>
-            </Button>
-          </Flex>
-          <div className="peer-focus:border-gray-600 peer-hover:border-gray-400 top-0 left-0 w-full h-full absolute border-2 rounded-xl"></div>
-        </div>
+        <SearchInput
+          onSending={handleQuestionSending}
+          placeholder={t('searchPlaceholder') + '...'}
+        ></SearchInput>
       </Modal>
     </>
   )

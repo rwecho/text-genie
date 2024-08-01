@@ -27,6 +27,7 @@ model QA {
     answerAt   DateTime?
     duration   Int?
     sources    AnswerSource[]
+    dislike    Boolean        @default(false)
 }
 
 model AnswerSource {

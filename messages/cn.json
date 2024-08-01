@@ -1,0 +1,17 @@
+{
+  "HomePage": {
+    "home": "主页",
+    "collections": "历史",
+    "more": "更多",
+    "title": "主页",
+    "share": "分享",
+    "newThread": "新问题",
+    "welcome": "欢迎来到主页",
+    "searchTitle": "查询、搜集、整理我们的知识库",
+    "searchPlaceholder": "知识的整理从一个问题开始"
+  },
+  "ThreadPage": {
+    "answer": "回答",
+    "inputPlaceholder": "添加评论"
+  }
+}

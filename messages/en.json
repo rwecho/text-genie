@@ -1,0 +1,18 @@
+{
+  "HomePage": {
+    "home": "Home",
+    "collections": "Collections",
+    "more": "More",
+    "title": "Home Page",
+    "newThread": "New Thread",
+    "share": "Share",
+    "welcome": "Welcome to the home page",
+    "searchTitle": "Search, collect, and organize our knowledge base",
+    "searchPlaceholder": "Organizing knowledge starts with a question"
+  },
+
+  "ThreadPage": {
+    "answer": "Answer",
+    "inputPlaceholder": "Add a comment"
+  }
+}

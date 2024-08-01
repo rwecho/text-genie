@@ -6,21 +6,31 @@ import {
 } from '@ant-design/icons'
 import { Space, Button, message } from 'antd'
 
-const AnswerActions = () => {
+type AnswerActionsProps = {
+  dislike: boolean
+  onCopy: () => Promise<void>
+  onDislike: () => Promise<void>
+  onReload: () => Promise<void>
+}
+
+const AnswerActions = (props: AnswerActionsProps) => {
   const [messageApi, contextHolder] = message.useMessage()
 
-  const handleCopy = () => {
-    // navigator.clipboard.writeText(threadJson.id)
+  const handleCopy = async () => {
+    await props.onCopy()
     messageApi.success('Copied to clipboard')
   }
-  const handleReload = () => {
+  const handleReload = async () => {
+    await props.onReload()
+
     messageApi.success('Reloaded')
   }
-  const handleDislike = () => {
-    messageApi.success('Disliked')
+  const handleDislike = async () => {
+    await props.onDislike()
   }
   return (
     <Space
+      className="py-2 px-2"
       style={{
         display: 'flex',
         justifyContent: 'flex-end',
@@ -29,21 +39,34 @@ const AnswerActions = () => {
     >
       {contextHolder}
       <Button
-        className='ms-auto'
-        size='small'
-        type='primary'
+        className="ms-auto"
+        size="small"
+        type="primary"
         ghost
         onClick={handleCopy}
       >
         <CopyOutlined></CopyOutlined>
       </Button>
-      <Button size='small' type='primary' ghost onClick={handleReload}>
+      {/* <Button size='small' type='primary' ghost onClick={handleReload}>
         <ReloadOutlined />
-      </Button>
+      </Button> */}
 
-      <Button size='small' type='primary' ghost onClick={handleDislike}>
-        <DislikeOutlined />
-      </Button>
+      {props.dislike && (
+        <Button
+          size="small"
+          type="primary"
+          className="!bg-gray-200"
+          onClick={handleDislike}
+        >
+          <DislikeOutlined />
+        </Button>
+      )}
+
+      {!props.dislike && (
+        <Button size="small" type="primary" ghost onClick={handleDislike}>
+          <DislikeOutlined />
+        </Button>
+      )}
     </Space>
   )
 }

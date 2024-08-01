@@ -1,8 +1,7 @@
 'use client'
-import { usePagedThreads, useTopThreads } from '@/hooks/thread'
+import { usePagedThreads } from '@/hooks/thread'
 import { useEffect, useState } from 'react'
 import {
-  Avatar,
   Button,
   Divider,
   List,
@@ -14,6 +13,7 @@ import {
 import InfiniteScroll from 'react-infinite-scroll-component'
 import { Thread } from '@/types/thread'
 import { BookOutlined, DeleteOutlined } from '@ant-design/icons'
+import Link from 'next/link'
 
 const { Search } = Input
 
@@ -71,7 +71,7 @@ const ThreadsPage = () => {
   return (
     <div
       id="scrollableDiv"
-      className="p-4 overflow-auto "
+      className="overflow-auto container mx-auto h-auto max-w-lg py-6 px-8 md:px-32 md:max-w-6xl "
       style={{
         height: 'calc(100vh - 100px)',
       }}
@@ -118,7 +118,7 @@ const ThreadsPage = () => {
             >
               <List.Item.Meta
                 title={
-                  <a href="https://ant.design">{item.qaList[0].question}</a>
+                  <Link href={`/t/${item.id}`}>{item.qaList[0].question}</Link>
                 }
                 description={
                   <div className="overflow-hidden">{item.qaList[0].answer}</div>

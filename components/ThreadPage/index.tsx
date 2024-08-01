@@ -5,7 +5,15 @@ import {
   LinkOutlined,
   PlusOutlined,
 } from '@ant-design/icons'
-import { Button, Divider, Flex, FloatButton, Input, Space } from 'antd'
+import {
+  Button,
+  Divider,
+  Flex,
+  FloatButton,
+  Input,
+  Skeleton,
+  Space,
+} from 'antd'
 import SourceCard from './SourceCard'
 import AnswerActions from './AnswerActions'
 import { useCallback, useEffect, useMemo, useState } from 'react'
@@ -13,6 +21,9 @@ import { fetchEventSource } from '@microsoft/fetch-event-source'
 import { SendOutlined } from '@ant-design/icons'
 import { KeyboardEvent } from 'react'
 import { Thread } from '@/types/thread'
+import Markdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
+import { useTranslations } from 'next-intl'
 
 const { TextArea } = Input
 
@@ -22,6 +33,7 @@ const ThreadPage = (props: { id: string }) => {
   const [thread, setThread] = useState<Thread>()
   const [related, setRelated] = useState<string[]>()
   const [generating, setGenerating] = useState(false)
+  const t = useTranslations('ThreadPage')
 
   const appendMessage = useCallback(
     async (message: string, abortController: AbortController) => {
@@ -39,9 +51,12 @@ const ThreadPage = (props: { id: string }) => {
         onclose: () => {
           setGenerating(false)
         },
+        onerror: (err) => {
+          console.error(err)
+          throw err
+        },
         signal: abortController.signal,
         onmessage: (event) => {
-          console.log(event)
           setGenerating(true)
           switch (event.event) {
             case 'qa':
@@ -56,6 +71,7 @@ const ThreadPage = (props: { id: string }) => {
                     question: question,
                     questionAt: new Date(),
                     sources: [],
+                    dislike: false,
                   })
                 } else {
                   lastQa.id = id
@@ -110,7 +126,6 @@ const ThreadPage = (props: { id: string }) => {
       const thread: Thread = await response.json()
       setThread(thread)
       const [lastQa] = thread.qaList.slice(-1)
-
       if (!lastQa.answer) {
         appendMessage('', abortController)
       }
@@ -124,26 +139,55 @@ const ThreadPage = (props: { id: string }) => {
     }
   }, [appendMessage, threadId])
 
-  const handleAppendQuestion = async () => {
-    if (!input) {
+  const handleAppendQuestion = async (question?: string) => {
+    if (!question) {
       return
     }
     const abortController = new AbortController()
-    await appendMessage(input, abortController)
-    setInput('')
+
+    let temp = question
+
+    try {
+      setInput('')
+      setRelated([])
+      await appendMessage(question, abortController)
+    } catch (error) {
+      setInput(temp)
+    }
   }
 
   const handleRelated = async (related: string) => {
-    const abortController = new AbortController()
-    await appendMessage(related, abortController)
+    await handleAppendQuestion(related)
   }
 
   const handleTextAreaKeyDown = async (
     e: KeyboardEvent<HTMLTextAreaElement>,
   ) => {
     if (e.ctrlKey && e.key === 'Enter') {
-      await handleAppendQuestion()
+      await handleAppendQuestion(input)
     }
+  }
+
+  const handleDislike = async (qaId: string) => {
+    const url = `/api/qa/${qaId}/dislike`
+    const response = await fetch(url, {
+      method: 'POST',
+    })
+    if (!response.ok) {
+      return
+    }
+    setThread((o) => {
+      if (!o) throw new Error('thread is not defined')
+      const list = [...o.qaList]
+      const qa = list.find((qa) => qa.id === qaId)
+      if (qa) {
+        qa.dislike = !qa.dislike
+      }
+      return {
+        ...o,
+        qaList: list,
+      }
+    })
   }
 
   return (
@@ -169,36 +213,48 @@ const ThreadPage = (props: { id: string }) => {
               >
                 <Space className="text-lg font-semibold">
                   <AimOutlined />
-                  Answer
+                  {t('answer')}
                 </Space>
 
-                <p
-                  className="text-lg"
-                  style={{
-                    overflowWrap: 'break-word',
-                  }}
-                >
-                  {qa.answer}
-                </p>
+                {!qa.answer && <Skeleton active></Skeleton>}
 
-                <AnswerActions></AnswerActions>
+                {qa.answer && (
+                  <>
+                    <Markdown remarkPlugins={[remarkGfm]}>{qa.answer}</Markdown>
+                    <AnswerActions
+                      dislike={qa.dislike}
+                      onCopy={async () => {
+                        if (qa.answer) {
+                          navigator.clipboard.writeText(qa.answer)
+                        }
+                      }}
+                      onDislike={async () => await handleDislike(qa.id)}
+                      onReload={async () => {}}
+                    ></AnswerActions>
+                  </>
+                )}
               </Flex>
 
-              <Flex vertical gap={'middle'}>
-                <Space className="text-lg font-semibold">
-                  <LinkOutlined />
-                  Source
-                </Space>
-                <Space wrap>
-                  {qa.sources &&
-                    qa.sources.map((source, index) => (
+              {qa.sources && qa.sources.length > 0 && (
+                <Flex vertical gap={'middle'}>
+                  <Space className="text-lg font-semibold">
+                    <LinkOutlined />
+                    Source
+                  </Space>
+                  <Space wrap>
+                    {qa.sources.map((source, index) => (
                       <SourceCard key={index} url={source.link} />
                     ))}
-                </Space>
-              </Flex>
+                  </Space>
+                </Flex>
+              )}
+
+              {!qa.sources && <Skeleton active></Skeleton>}
             </Flex>
           )
         })}
+
+      {!thread && <Skeleton active></Skeleton>}
 
       {related && related.length > 0 && (
         <Flex vertical gap={'middle'}>
@@ -228,11 +284,17 @@ const ThreadPage = (props: { id: string }) => {
           </Flex>
         </Flex>
       )}
+
+      {
+        // related skeleton
+        !thread && <Skeleton active></Skeleton>
+      }
+
       <Flex vertical className="bottom-4 pt-4 left-0 w-full sticky">
         <div className="relative w-full">
           <TextArea
             className="z-10 !p-4 !pr-16 peer hover:!border-0 !border-0 focus-within:!border-0 focus-within:!shadow-none"
-            placeholder="Add a comment..."
+            placeholder={t('inputPlaceholder') + '...'}
             autoSize={{ minRows: 1, maxRows: 6 }}
             value={input}
             onChange={(e) => setInput(e.target.value)}
@@ -241,7 +303,7 @@ const ThreadPage = (props: { id: string }) => {
           <Button
             type="text"
             className="z-10 !absolute !right-2 !bottom-3"
-            onClick={handleAppendQuestion}
+            onClick={() => handleAppendQuestion(input)}
             loading={generating}
             disabled={!input}
           >
