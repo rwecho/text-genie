@@ -5,6 +5,7 @@ import {
   DislikeOutlined,
 } from '@ant-design/icons'
 import { Space, Button, message } from 'antd'
+import { useTranslations } from 'next-intl'
 
 type AnswerActionsProps = {
   dislike: boolean
@@ -16,9 +17,11 @@ type AnswerActionsProps = {
 const AnswerActions = (props: AnswerActionsProps) => {
   const [messageApi, contextHolder] = message.useMessage()
 
+  const t = useTranslations('ThreadPage')
+
   const handleCopy = async () => {
     await props.onCopy()
-    messageApi.success('Copied to clipboard')
+    messageApi.success(t('copied'))
   }
   const handleReload = async () => {
     await props.onReload()

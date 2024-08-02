@@ -8,10 +8,21 @@
     "newThread": "新问题",
     "welcome": "欢迎来到主页",
     "searchTitle": "查询、搜集、整理我们的知识库",
-    "searchPlaceholder": "知识的整理从一个问题开始"
+    "searchPlaceholder": "知识的整理从一个问题开始",
+    "copied": "已复制"
   },
   "ThreadPage": {
     "answer": "回答",
-    "inputPlaceholder": "添加评论"
+    "inputPlaceholder": "添加评论",
+    "copied": "已复制",
+    "dislikeSuccess": "踩成功",
+    "undislikeSuccess": "取消踩成功"
+  },
+  "ThreadsPage": {
+    "searchPlaceholder": "搜索",
+    "dataEndMessage": "这就是全部，没有更多了 🤐",
+    "deleteSuccess": "删除成功",
+    "deleteConfirm": "确定删除吗？",
+    "deleteConfirmDescription": "删除后将无法恢复, 请谨慎操作"
   }
 }

@@ -17,21 +17,57 @@ export class ThreadService {
   }
 
   public async Append(question?: string) {
+    console.log('Append question:', question)
     if (question) {
-      // we have a new question, need to start a new roll dialogue
-      const lastQa = await this.prisma.qA.create({
-        data: {
-          question,
-          threadId: this.thread.id,
-        },
-      })
+      if (this._lastQa.answer) {
+        // the last question has been answered, need to append a new question
+        const lastQa = await this.prisma.qA.create({
+          data: {
+            question,
+            threadId: this.thread.id,
+          },
+        })
 
-      this._lastQa = {
-        ...lastQa,
-        sources: [],
+        console.log(
+          'The last question has been answered, need to append a new question:',
+          lastQa,
+        )
+        this._lastQa = {
+          ...lastQa,
+          sources: [],
+        }
+        this.thread.qaList.push(this._lastQa)
+      } else {
+        // the last question has not been answered, but the user has asked a new question
+        // this is not allowed
+
+        console.warn(
+          'The last question has not been answered, but the user has asked a new question:',
+          this._lastQa,
+          question,
+        )
+        return new ReadableStream({
+          async pull(controller) {
+            controller.close()
+          },
+        })
       }
-      this.thread.qaList.push(this._lastQa)
-      console.log('Append with question:', question)
+    } else {
+      if (this._lastQa.answer) {
+        // the last question has been answered, no need to append
+        console.log('The last question has been answered, no need to append')
+        return new ReadableStream({
+          async pull(controller) {
+            controller.close()
+          },
+        })
+      } else {
+        // the last question has not been answered, need to answer it
+
+        console.log(
+          'The last question has not been answered, need to answer it',
+        )
+      }
     }
 
     return this.iteratorToStream([

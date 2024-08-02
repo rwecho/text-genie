@@ -11,6 +11,7 @@ import {
   Flex,
   FloatButton,
   Input,
+  message,
   Skeleton,
   Space,
 } from 'antd'
@@ -24,170 +25,57 @@ import { Thread } from '@/types/thread'
 import Markdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { useTranslations } from 'next-intl'
+import { useThreadStore } from '@/store/thread'
 
 const { TextArea } = Input
 
-const ThreadPage = (props: { id: string }) => {
-  const threadId = props.id
+const ThreadPage = (props: { thread: Thread }) => {
   const [input, setInput] = useState<string>()
-  const [thread, setThread] = useState<Thread>()
-  const [related, setRelated] = useState<string[]>()
-  const [generating, setGenerating] = useState(false)
   const t = useTranslations('ThreadPage')
 
-  const appendMessage = useCallback(
-    async (message: string, abortController: AbortController) => {
-      const url = `/api/t/${threadId}`
-      await fetchEventSource(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: message
-          ? JSON.stringify({
-              question: message,
-            })
-          : '{}',
-        onclose: () => {
-          setGenerating(false)
-        },
-        onerror: (err) => {
-          console.error(err)
-          throw err
-        },
-        signal: abortController.signal,
-        onmessage: (event) => {
-          setGenerating(true)
-          switch (event.event) {
-            case 'qa':
-              setThread((o) => {
-                if (!o) throw new Error('thread is not defined')
-                const { id, question } = JSON.parse(event.data)
-                const list = [...o.qaList]
-                const [lastQa] = list.slice(-1)
-                if (lastQa.answer) {
-                  list.push({
-                    id: id,
-                    question: question,
-                    questionAt: new Date(),
-                    sources: [],
-                    dislike: false,
-                  })
-                } else {
-                  lastQa.id = id
-                }
+  const { thread, relatedTopics, dislike, setThread, appendNew, answerLast } =
+    useThreadStore()
 
-                return {
-                  ...o,
-                  qaList: list,
-                }
-              })
-              break
-            case 'answer':
-              setThread((o) => {
-                if (!o) throw new Error('thread is not defined')
-                const list = [...o.qaList]
-                const [lastQa] = list.slice(-1)
-                if (!lastQa.answer) {
-                  lastQa.answer = ''
-                }
-                lastQa.answer += event.data
-                return {
-                  ...o,
-                  qaList: list,
-                }
-              })
-
-              break
-            case 'sources':
-              setThread((o) => {
-                if (!o) throw new Error('thread is not defined')
-
-                const list = [...o.qaList]
-                const [lastQa] = list.slice(-1)
-                lastQa.sources = JSON.parse(event.data)
-                return { ...o, qaList: list }
-              })
-              break
-            case 'related':
-              setRelated(JSON.parse(event.data))
-              break
-          }
-        },
-      })
-    },
-    [threadId],
-  )
+  const handleDislike = async (qaId: string) => {
+    try {
+      const result = await dislike(qaId)
+      if (result) {
+        message.success(t('dislikeSuccess'))
+      } else {
+        message.success(t('undislikeSuccess'))
+      }
+    } catch (error: any) {
+      message.error('Failed to dislike')
+    }
+  }
 
   useEffect(() => {
-    const abortController = new AbortController()
-    const load = async () => {
-      const response = await fetch(`/api/t/${threadId}`)
-      const thread: Thread = await response.json()
-      setThread(thread)
-      const [lastQa] = thread.qaList.slice(-1)
-      if (!lastQa.answer) {
-        appendMessage('', abortController)
-      }
+    const init = async () => {
+      setThread(props.thread)
+      await answerLast(props.thread.id)
+      console.log('ThreadPage useEffect')
     }
-
-    console.log('ThreadPage useEffect')
-    load()
-
-    return () => {
-      abortController.abort()
-    }
-  }, [appendMessage, threadId])
-
-  const handleAppendQuestion = async (question?: string) => {
-    if (!question) {
-      return
-    }
-    const abortController = new AbortController()
-
-    let temp = question
-
-    try {
-      setInput('')
-      setRelated([])
-      await appendMessage(question, abortController)
-    } catch (error) {
-      setInput(temp)
-    }
-  }
-
-  const handleRelated = async (related: string) => {
-    await handleAppendQuestion(related)
-  }
+    init()
+  }, [setThread, answerLast, props.thread])
 
   const handleTextAreaKeyDown = async (
     e: KeyboardEvent<HTMLTextAreaElement>,
   ) => {
-    if (e.ctrlKey && e.key === 'Enter') {
-      await handleAppendQuestion(input)
+    if (e.key === 'Enter') {
+      e.preventDefault()
+      await handleSend()
     }
   }
 
-  const handleDislike = async (qaId: string) => {
-    const url = `/api/qa/${qaId}/dislike`
-    const response = await fetch(url, {
-      method: 'POST',
-    })
-    if (!response.ok) {
-      return
+  const handleSend = async () => {
+    if (input) {
+      appendNew(props.thread.id, input)
+      setInput('')
     }
-    setThread((o) => {
-      if (!o) throw new Error('thread is not defined')
-      const list = [...o.qaList]
-      const qa = list.find((qa) => qa.id === qaId)
-      if (qa) {
-        qa.dislike = !qa.dislike
-      }
-      return {
-        ...o,
-        qaList: list,
-      }
-    })
+  }
+
+  const handleRelated = async (related: string) => {
+    await appendNew(props.thread.id, related)
   }
 
   return (
@@ -205,7 +93,6 @@ const ThreadPage = (props: { id: string }) => {
               <h1 className="text-2xl font-semibold">{qa.question}</h1>
 
               {/* answer paragrah */}
-
               <Flex
                 vertical
                 gap={'middle'}
@@ -248,7 +135,6 @@ const ThreadPage = (props: { id: string }) => {
                   </Space>
                 </Flex>
               )}
-
               {!qa.sources && <Skeleton active></Skeleton>}
             </Flex>
           )
@@ -256,14 +142,14 @@ const ThreadPage = (props: { id: string }) => {
 
       {!thread && <Skeleton active></Skeleton>}
 
-      {related && related.length > 0 && (
+      {relatedTopics && relatedTopics.length > 0 && (
         <Flex vertical gap={'middle'}>
           <Space className="text-lg font-semibold">
             <DisconnectOutlined />
             Related
           </Space>
           <Flex vertical className="w-full" gap={'middle'}>
-            {related.map((related, index) => (
+            {relatedTopics.map((related, index) => (
               <Button
                 key={index}
                 size="large"
@@ -303,8 +189,7 @@ const ThreadPage = (props: { id: string }) => {
           <Button
             type="text"
             className="z-10 !absolute !right-2 !bottom-3"
-            onClick={() => handleAppendQuestion(input)}
-            loading={generating}
+            onClick={handleSend}
             disabled={!input}
           >
             <SendOutlined></SendOutlined>

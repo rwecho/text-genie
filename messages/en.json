@@ -8,11 +8,22 @@
     "share": "Share",
     "welcome": "Welcome to the home page",
     "searchTitle": "Search, collect, and organize our knowledge base",
-    "searchPlaceholder": "Organizing knowledge starts with a question"
+    "searchPlaceholder": "Organizing knowledge starts with a question",
+    "copied": "Copied"
   },
 
   "ThreadPage": {
     "answer": "Answer",
-    "inputPlaceholder": "Add a comment"
+    "inputPlaceholder": "Add a comment",
+    "copied": "Copied",
+    "dislikeSuccess": "Dislike success",
+    "undislikeSuccess": "Cancel dislike success"
+  },
+  "ThreadsPage": {
+    "searchPlaceholder": "Search",
+    "dataEndMessage": "It is all, nothing more 🤐",
+    "deleteSuccess": "Delete success",
+    "deleteConfirm": "Are you sure you want to delete?",
+    "deleteConfirmDescription": "After deletion, it cannot be recovered, please operate with caution"
   }
 }

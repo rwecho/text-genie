@@ -127,16 +127,16 @@ export default function RootLayout({
 
   const handleShare = () => {
     navigator.clipboard.writeText(window.location.href)
-    message.success('Link copied to clipboard')
+    message.success(t('copied'))
   }
 
   const handleQuestionSending = async (question: string) => {
     if (!question) {
       return
     }
-
     const thread = await createThread(question)
     router.push(`/t/${thread.id}`)
+    setIsModalOpen(false)
   }
 
   useEffect(() => {
@@ -273,12 +273,12 @@ export default function RootLayout({
 
             <Space className="!ml-auto">
               <Dropdown menu={{ items: languageItems }}>
-                <a onClick={(e) => e.preventDefault()}>
+                <Button onClick={(e) => e.preventDefault()} type="text">
                   <Space>
                     {locale === 'en' ? 'English' : '简体中文'}
                     <DownOutlined />
                   </Space>
-                </a>
+                </Button>
               </Dropdown>
 
               <Button

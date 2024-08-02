@@ -1,5 +1,4 @@
 'use client'
-import { usePagedThreads } from '@/hooks/thread'
 import { useEffect, useState } from 'react'
 import {
   Button,
@@ -11,31 +10,37 @@ import {
   Input,
 } from 'antd'
 import InfiniteScroll from 'react-infinite-scroll-component'
-import { Thread } from '@/types/thread'
 import { BookOutlined, DeleteOutlined } from '@ant-design/icons'
 import Link from 'next/link'
+import { usePagedThreadsStore } from '@/store/thread'
+import { useTranslations } from 'next-intl'
 
 const { Search } = Input
 
 const ThreadsPage = () => {
   const [page, setPage] = useState(0)
+  const pageSize = 10
   const [searchText, setSearchText] = useState('')
-  const [searching, setSearching] = useState(false)
-  const [totalThreads, setTotalThreads] = useState<Thread[]>([])
-  const { threads, totalCount, loading, error, totalPage } = usePagedThreads(
-    page,
-    10,
-    searchText,
-  )
-  useEffect(() => {
-    if (threads) {
-      setTotalThreads((o) => {
-        return [...o, ...threads]
-      })
+  const { threads, totalCount, load, remove } = usePagedThreadsStore()
 
-      console.log(threads)
+  const [loading, setLoading] = useState(false)
+
+  const t = useTranslations('ThreadsPage')
+
+  useEffect(() => {
+    const init = async () => {
+      try {
+        setLoading(true)
+        await load(page, pageSize, searchText)
+      } catch (error: any) {
+        message.error(error.message)
+      } finally {
+        setLoading(false)
+      }
     }
-  }, [threads])
+
+    init()
+  }, [load, page, searchText])
 
   const loadMoreData = () => {
     setPage(page + 1)
@@ -43,29 +48,18 @@ const ThreadsPage = () => {
 
   const handleRemove = async (id: string) => {
     try {
-      await fetch(`/api/t/${id}`, {
-        method: 'DELETE',
-      })
-
-      setTotalThreads((o) => {
-        return [...o.filter((t) => t.id != id)]
-      })
-
-      message.success(id)
+      setLoading(true)
+      await remove(id)
+      message.success(t('deleteSuccess'))
     } catch (error: any) {
       message.error(error.message)
+    } finally {
+      setLoading(false)
     }
   }
 
   const handleSearch = async (value: string) => {
-    try {
-      setSearching(true)
-      setSearchText(value)
-      setTotalThreads([])
-    } catch (error) {
-    } finally {
-      setSearching(false)
-    }
+    setSearchText(value)
   }
 
   return (
@@ -78,30 +72,29 @@ const ThreadsPage = () => {
     >
       <Search
         onSearch={handleSearch}
-        placeholder="Search your threads..."
-        loading={searching}
+        placeholder={t('searchPlaceholder') + '...'}
+        loading={loading}
         allowClear
       ></Search>
       <InfiniteScroll
-        dataLength={totalThreads.length}
+        dataLength={threads.length}
         next={loadMoreData}
-        hasMore={
-          totalThreads.length < (totalCount === undefined ? 0 : totalCount)
-        }
+        hasMore={threads.length < (totalCount === undefined ? 0 : totalCount)}
         loader={<Skeleton avatar paragraph={{ rows: 1 }} active />}
-        endMessage={<Divider plain>It is all, nothing more 🤐</Divider>}
+        endMessage={<Divider plain>{t('dataEndMessage')}</Divider>}
         scrollableTarget="scrollableDiv"
       >
         <List
-          dataSource={totalThreads}
+          dataSource={threads}
           renderItem={(item) => (
             <List.Item
               key={item.id}
+              className="relative peer"
               actions={[
                 <Popconfirm
                   key="list-delete-action"
-                  title="Delete the task"
-                  description="Are you sure to delete this task?"
+                  title={t('deleteConfirm')}
+                  description={t('deleteConfirmDescription')}
                   onConfirm={() => handleRemove(item.id)}
                   onCancel={() => {}}
                   okText="Yes"

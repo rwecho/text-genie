@@ -56,12 +56,9 @@ export async function POST(
   if (!thread) {
     return new Response('Thread not found', { status: 404 })
   }
-  const threadService = new ThreadService(thread, prisma)
-
-  const stream = await threadService.Append(question)
-  return new Response(stream, {
+  return new Response(JSON.stringify(thread), {
     headers: {
-      'Content-Type': 'text/event-stream',
+      'Content-Type': 'application/json',
     },
   })
 }

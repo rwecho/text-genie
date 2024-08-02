@@ -13,8 +13,6 @@ const SearchInput = (props: SearchInputProps) => {
   const [sendLoading, setSendLoading] = useState(false)
   const [question, setQuestion] = useState<string>()
 
-  const t = useTranslations('HomePage')
-
   const handleTextAreaKeyDown = (
     e: React.KeyboardEvent<HTMLTextAreaElement>,
   ) => {
