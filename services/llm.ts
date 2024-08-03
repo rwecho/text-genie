@@ -32,6 +32,9 @@ export async function* createChatCompletion(messages: Message[]) {
   let result = await reader.read()
   while (!result.done) {
     const chunk = decoder.decode(result.value, { stream: true })
+
+    console.log('1111 chunk:', chunk)
+
     yield chunk
     result = await reader.read()
   }

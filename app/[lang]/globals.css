@@ -2,6 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer components {
+}
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 8px; /* Adjust the width as needed */
@@ -14,4 +16,76 @@
 
 ::-webkit-scrollbar-thumb:hover {
   background-color: #555; /* Change the hover color to your desired color */
+}
+
+/* Markdown Table */
+.markdown-view table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.markdown-view table th,
+.markdown-view table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: center;
+}
+
+.markdown-view table th {
+  background-color: #f2f2f2;
+  font-weight: bold;
+}
+
+.markdown-view table tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+.markdown-view table tr:hover {
+  background-color: #f5f5f5;
+}
+
+:not(pre) > code.hljs,
+:not(pre) > code[class*='language-'] {
+  border-radius: 0.3em;
+  white-space: normal;
+}
+.hljs-comment {
+  color: hsla(0, 0%, 100%, 0.5);
+}
+.hljs-meta {
+  color: hsla(0, 0%, 100%, 0.6);
+}
+.hljs-built_in,
+.hljs-class .hljs-title {
+  color: #e9950c;
+}
+.hljs-doctag,
+.hljs-formula,
+.hljs-keyword,
+.hljs-literal {
+  color: #2e95d3;
+}
+.hljs-addition,
+.hljs-attribute,
+.hljs-meta-string,
+.hljs-regexp,
+.hljs-string {
+  color: #00a67d;
+}
+.hljs-attr,
+.hljs-number,
+.hljs-selector-attr,
+.hljs-selector-class,
+.hljs-selector-pseudo,
+.hljs-template-variable,
+.hljs-type,
+.hljs-variable {
+  color: #df3079;
+}
+.hljs-bullet,
+.hljs-link,
+.hljs-selector-id,
+.hljs-symbol,
+.hljs-title {
+  color: #f22c3d;
 }

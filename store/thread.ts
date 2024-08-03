@@ -153,7 +153,9 @@ export const useThreadStore = create<Thread>((set) => ({
               if (!lastQa.answer) {
                 lastQa.answer = ''
               }
-              lastQa.answer += data
+              const chunk = JSON.parse(data)
+              console.log('answer', chunk)
+              lastQa.answer += chunk
               return {
                 thread: {
                   ...thread,
@@ -238,7 +240,10 @@ export const useThreadStore = create<Thread>((set) => ({
               if (!lastQa.answer) {
                 lastQa.answer = ''
               }
-              lastQa.answer += data
+              const chunk = JSON.parse(data)
+              console.log('answer', chunk)
+
+              lastQa.answer += chunk
 
               return {
                 thread: {

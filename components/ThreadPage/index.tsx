@@ -18,14 +18,12 @@ import {
 import SourceCard from './SourceCard'
 import AnswerActions from './AnswerActions'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { fetchEventSource } from '@microsoft/fetch-event-source'
 import { SendOutlined } from '@ant-design/icons'
 import { KeyboardEvent } from 'react'
 import { Thread } from '@/types/thread'
-import Markdown from 'react-markdown'
-import remarkGfm from 'remark-gfm'
 import { useTranslations } from 'next-intl'
 import { useThreadStore } from '@/store/thread'
+import ContentView from './ContentView'
 
 const { TextArea } = Input
 
@@ -107,7 +105,7 @@ const ThreadPage = (props: { thread: Thread }) => {
 
                 {qa.answer && (
                   <>
-                    <Markdown remarkPlugins={[remarkGfm]}>{qa.answer}</Markdown>
+                    <ContentView content={qa.answer}></ContentView>
                     <AnswerActions
                       dislike={qa.dislike}
                       onCopy={async () => {

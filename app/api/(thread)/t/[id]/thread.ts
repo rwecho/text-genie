@@ -128,8 +128,13 @@ export class ThreadService {
 
     let answer = ''
     for await (const chunk of completionStream) {
+      // the answer contains newline characters, so we need to stringify it.
+      // otherwise, the eventsource will treat the newline characters as the end of the event.
+
       answer += chunk
-      yield* this.makeEvent('answer', chunk)
+      const data = JSON.stringify(chunk)
+      console.log('2222 chunk:', data)
+      yield* this.makeEvent('answer', data)
     }
 
     // set the answer back to the last qa.
@@ -182,6 +187,9 @@ export class ThreadService {
 
   private *makeEvent(event: string, data: string) {
     yield this.encoder.encode(`event: ${event}\n`)
+
+    console.log('3333 data:', data)
+
     yield this.encoder.encode(`data: ${data}\n\n`)
   }
 }

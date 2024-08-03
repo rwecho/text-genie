@@ -72,7 +72,7 @@ export default function RootLayout({
       onClick: () => {
         startTransition(() => {
           const currentFullPath = pathname + window.location.search
-          debugger
+
           router.replace(currentFullPath, { locale: 'en' })
         })
       },
@@ -185,7 +185,9 @@ export default function RootLayout({
                   height={32}
                 />
                 {!collapsed && (
-                  <span className="ms-4 text-xl font-semibold">文字助手</span>
+                  <span className="ms-4 text-xl font-semibold">
+                    {t('appName')}
+                  </span>
                 )}
               </Space>
             </Button>

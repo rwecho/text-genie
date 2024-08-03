@@ -9,7 +9,8 @@
     "welcome": "Welcome to the home page",
     "searchTitle": "Search, collect, and organize our knowledge base",
     "searchPlaceholder": "Organizing knowledge starts with a question",
-    "copied": "Copied"
+    "copied": "Copied",
+    "appName": "Knowledges"
   },
 
   "ThreadPage": {
