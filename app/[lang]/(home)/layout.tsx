@@ -29,6 +29,7 @@ import {
   HomeOutlined,
   DownOutlined,
   SmileOutlined,
+  MenuOutlined,
 } from '@ant-design/icons'
 // import { useRouter } from 'next/navigation'
 import { usePathname, useRouter } from '@/services/navigation'
@@ -41,7 +42,6 @@ import { useParams } from 'next/navigation'
 import { useLocale, useTranslations } from 'next-intl'
 
 const { Header, Content, Sider } = Layout
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -117,6 +117,22 @@ export default function RootLayout({
     return items
   }, [t, topThreads])
 
+  const menuItems: MenuProps['items'] = useMemo(() => {
+    return [
+      {
+        key: 'home',
+        label: <Link href="/">{t('home')}</Link>,
+        icon: <HomeOutlined />,
+      },
+      {
+        key: 'collections',
+        label: t('collections'),
+        icon: <HistoryOutlined />,
+        children: collections,
+      },
+    ]
+  }, [collections, t])
+
   const handleNewThread = () => {
     setIsModalOpen(true)
   }
@@ -152,10 +168,13 @@ export default function RootLayout({
     }
   }, [])
 
+  const layoutClassName = collapsed ? 'md:ml-[80px]' : 'md:ml-[200px]'
+
   return (
     <>
       <Layout>
         <Sider
+          className="hidden md:block "
           style={{
             overflow: 'auto',
             height: '100vh',
@@ -219,27 +238,7 @@ export default function RootLayout({
                 border: 0,
               }}
               defaultOpenKeys={['collections']}
-              items={[
-                {
-                  key: 'home',
-                  icon: <HomeOutlined />,
-                  label: <Link href="/">{t('home')}</Link>,
-                },
-                {
-                  key: 'collections',
-                  icon: <HistoryOutlined />,
-                  label: (
-                    <>
-                      <span>
-                        {t('collections')}
-                        {loading && <Spin size="small"></Spin>}
-                      </span>
-                      {error && message.error('Failed to load collections')}
-                    </>
-                  ),
-                  children: collections,
-                },
-              ]}
+              items={menuItems}
             />
             <Menu
               style={{
@@ -254,9 +253,9 @@ export default function RootLayout({
           </Flex>
         </Sider>
         <Layout
+          className={layoutClassName}
           style={{
             minHeight: '100vh',
-            marginLeft: collapsed ? 80 : 200,
             transition: 'margin-left 0.2s',
           }}
         >
@@ -264,14 +263,34 @@ export default function RootLayout({
             className="!px-4 !py-0 flex items-center "
             style={{ background: colorBgContainer }}
           >
-            <Button
-              type="text"
-              icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-              onClick={() => setCollapsed(!collapsed)}
-              style={{
-                fontSize: '16px',
-              }}
-            />
+            <div className="hidden md:block">
+              <Button
+                type="text"
+                icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+                onClick={() => setCollapsed(!collapsed)}
+                style={{
+                  fontSize: '16px',
+                }}
+              />
+            </div>
+
+            <div className="md:hidden">
+              <Dropdown menu={{ items: menuItems }}>
+                <Button
+                  type="text"
+                  icon={<MenuOutlined />}
+                  style={{
+                    fontSize: '16px',
+                  }}
+                />
+              </Dropdown>
+
+              <Button
+                type="text"
+                icon={<PlusOutlined />}
+                onClick={handleNewThread}
+              ></Button>
+            </div>
 
             <Space className="!ml-auto">
               <Dropdown menu={{ items: languageItems }}>
