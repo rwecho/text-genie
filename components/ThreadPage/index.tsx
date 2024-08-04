@@ -196,7 +196,11 @@ const ThreadPage = (props: { thread: Thread }) => {
         </div>
       </Flex>
 
-      <FloatButton.BackTop></FloatButton.BackTop>
+      <FloatButton.BackTop
+        style={{
+          insetBlockEnd: '96px',
+        }}
+      ></FloatButton.BackTop>
     </Flex>
   )
 }
