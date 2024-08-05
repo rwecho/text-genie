@@ -33,8 +33,16 @@ const ThreadPage = (props: { thread: Thread }) => {
 
   const scrollHandlerRef = useRef<HTMLDivElement>(null)
 
-  const { thread, relatedTopics, dislike, setThread, appendNew, answerLast } =
-    useThreadStore()
+  const {
+    thread,
+    answering,
+    stopAnswer,
+    relatedTopics,
+    dislike,
+    setThread,
+    appendNew,
+    answerLast,
+  } = useThreadStore()
 
   const handleDislike = async (qaId: string) => {
     try {
@@ -190,25 +198,42 @@ const ThreadPage = (props: { thread: Thread }) => {
       <div ref={scrollHandlerRef} className="h-16"></div>
 
       <Flex vertical className="bottom-4 pt-4 left-0 w-full sticky">
-        <div className="relative w-full">
-          <TextArea
-            className="z-10 !p-4 !pr-16 peer hover:!border-0 !border-0 focus-within:!border-0 focus-within:!shadow-none"
-            placeholder={t('inputPlaceholder') + '...'}
-            autoSize={{ minRows: 1, maxRows: 6 }}
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={handleTextAreaKeyDown}
-          ></TextArea>
-          <Button
-            type="text"
-            className="z-10 !absolute !right-2 !bottom-3"
-            onClick={handleSend}
-            disabled={!input}
-          >
-            <SendOutlined></SendOutlined>
-          </Button>
-          <div className="peer-focus:outline-gray-600 outline outline-gray-400  outline-offset-2 peer-hover:outline-gray-400 top-0 left-0 w-full h-full absolute border-2 rounded-xl"></div>
-        </div>
+        {/* {answering && (
+          <div className="w-full">
+            <Button
+              type="default"
+              ghost
+              className="w-full"
+              onClick={() => {
+                stopAnswer()
+              }}
+            >
+              {t('stop')}
+            </Button>
+          </div>
+        )} */}
+
+        {
+          <div className="relative w-full">
+            <TextArea
+              className="z-10 !p-4 !pr-16 peer hover:!border-0 !border-0 focus-within:!border-0 focus-within:!shadow-none"
+              placeholder={t('inputPlaceholder') + '...'}
+              autoSize={{ minRows: 1, maxRows: 6 }}
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={handleTextAreaKeyDown}
+            ></TextArea>
+            <Button
+              type="text"
+              className="z-10 !absolute !right-2 !bottom-3"
+              onClick={handleSend}
+              disabled={!input}
+            >
+              <SendOutlined></SendOutlined>
+            </Button>
+            <div className="peer-focus:outline-gray-600 outline outline-gray-400  outline-offset-2 peer-hover:outline-gray-400 top-0 left-0 w-full h-full absolute border-2 rounded-xl"></div>
+          </div>
+        }
       </Flex>
 
       <FloatButton.BackTop

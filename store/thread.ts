@@ -66,9 +66,9 @@ export const usePagedThreadsStore = create<PagedThreads>((set) => ({
 interface Thread {
   thread?: ThreadType
   relatedTopics: string[]
-
+  answering: boolean
+  stopAnswer: () => void
   setThread: (thread: ThreadType) => void
-
   dislike: (qaId: string) => Promise<boolean>
   appendNew: (id: string, question: string) => Promise<void>
   answerLast: (id: string) => Promise<void>
@@ -77,6 +77,12 @@ interface Thread {
 export const useThreadStore = create<Thread>((set) => ({
   thread: undefined,
   relatedTopics: [],
+  answering: false,
+  stopAnswer: () => {
+    set(() => ({
+      answering: false,
+    }))
+  },
   setThread: (thread) => {
     set({ thread })
   },
@@ -104,6 +110,7 @@ export const useThreadStore = create<Thread>((set) => ({
   appendNew: async (id, question) => {
     set(() => ({
       relatedTopics: [],
+      answering: true,
     }))
 
     await answerQa({
@@ -163,14 +170,12 @@ export const useThreadStore = create<Thread>((set) => ({
                 },
               }
             })
-
             break
           case 'sources':
             set((t) => {
               if (!t.thread) {
                 return t
               }
-
               const list = [...t.thread.qaList]
               const [lastQa] = list.slice(-1)
               lastQa.sources = JSON.parse(data)
@@ -182,7 +187,6 @@ export const useThreadStore = create<Thread>((set) => ({
               }
             })
             break
-
           case 'related':
             set(() => {
               const relatedTopics = JSON.parse(data)
@@ -194,8 +198,15 @@ export const useThreadStore = create<Thread>((set) => ({
         }
       },
     })
+
+    set(() => ({
+      answering: false,
+    }))
   },
   answerLast: async (id) => {
+    set(() => ({
+      answering: true,
+    }))
     await answerQa({
       id,
       onMessage: (event, data) => {
@@ -232,19 +243,15 @@ export const useThreadStore = create<Thread>((set) => ({
               if (!t.thread) {
                 return t
               }
-
               const thread = { ...t.thread }
               const qaList = [...thread.qaList]
               const [lastQa] = qaList.slice(-1)
-
               if (!lastQa.answer) {
                 lastQa.answer = ''
               }
               const chunk = JSON.parse(data)
               console.log('answer', chunk)
-
               lastQa.answer += chunk
-
               return {
                 thread: {
                   ...thread,
@@ -261,7 +268,6 @@ export const useThreadStore = create<Thread>((set) => ({
               const list = [...t.thread.qaList]
               const [lastQa] = list.slice(-1)
               lastQa.sources = JSON.parse(data)
-
               return {
                 thread: {
                   ...t.thread,
@@ -270,7 +276,6 @@ export const useThreadStore = create<Thread>((set) => ({
               }
             })
             break
-
           case 'related':
             set(() => {
               const relatedTopics = JSON.parse(data)
@@ -282,5 +287,9 @@ export const useThreadStore = create<Thread>((set) => ({
         }
       },
     })
+
+    set(() => ({
+      answering: false,
+    }))
   },
 }))
