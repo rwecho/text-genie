@@ -79,13 +79,15 @@ const ThreadPage = (props: { thread: Thread }) => {
   }
 
   useEffect(() => {
+    // auto scroll to bottom
     if (scrollHandlerRef.current) {
       scrollHandlerRef.current.scrollIntoView({
         behavior: 'smooth',
         block: 'end',
+        inline: 'end',
       })
     }
-  }, [relatedTopics])
+  }, [thread, relatedTopics])
 
   return (
     <Flex
@@ -185,8 +187,7 @@ const ThreadPage = (props: { thread: Thread }) => {
         !thread && <Skeleton active></Skeleton>
       }
 
-      {/* scroll handler */}
-      <div ref={scrollHandlerRef}></div>
+      <div ref={scrollHandlerRef} className="h-16"></div>
 
       <Flex vertical className="bottom-4 pt-4 left-0 w-full sticky">
         <div className="relative w-full">

@@ -109,7 +109,7 @@ const p = memo(function Paragraph(
     'ref'
   >,
 ) {
-  return <p className="whitespace-pre-wrap">{props?.children}</p>
+  return <div className="whitespace-pre-wrap">{props?.children}</div>
 })
 
 export default ContentView
