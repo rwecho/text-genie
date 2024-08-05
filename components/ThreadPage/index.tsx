@@ -172,7 +172,7 @@ const ThreadPage = (props: { thread: Thread }) => {
               <Button
                 key={index}
                 size="large"
-                className="w-full"
+                className="w-full !text-start !whitespace-normal !h-auto overflow-hidden overflow-ellipsis"
                 type="default"
                 icon={<PlusOutlined />}
                 iconPosition="end"
