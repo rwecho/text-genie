@@ -17,7 +17,7 @@ import {
 } from 'antd'
 import SourceCard from './SourceCard'
 import AnswerActions from './AnswerActions'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { SendOutlined } from '@ant-design/icons'
 import { KeyboardEvent } from 'react'
 import { Thread } from '@/types/thread'
@@ -30,6 +30,8 @@ const { TextArea } = Input
 const ThreadPage = (props: { thread: Thread }) => {
   const [input, setInput] = useState<string>()
   const t = useTranslations('ThreadPage')
+
+  const scrollHandlerRef = useRef<HTMLDivElement>(null)
 
   const { thread, relatedTopics, dislike, setThread, appendNew, answerLast } =
     useThreadStore()
@@ -75,6 +77,15 @@ const ThreadPage = (props: { thread: Thread }) => {
   const handleRelated = async (related: string) => {
     await appendNew(props.thread.id, related)
   }
+
+  useEffect(() => {
+    if (scrollHandlerRef.current) {
+      scrollHandlerRef.current.scrollIntoView({
+        behavior: 'smooth',
+        block: 'end',
+      })
+    }
+  }, [relatedTopics])
 
   return (
     <Flex
@@ -173,6 +184,9 @@ const ThreadPage = (props: { thread: Thread }) => {
         // related skeleton
         !thread && <Skeleton active></Skeleton>
       }
+
+      {/* scroll handler */}
+      <div ref={scrollHandlerRef}></div>
 
       <Flex vertical className="bottom-4 pt-4 left-0 w-full sticky">
         <div className="relative w-full">
