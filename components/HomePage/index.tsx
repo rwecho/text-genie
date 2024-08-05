@@ -94,8 +94,8 @@ const HomePage = () => {
           background: colorBgContainer,
         }}
       >
-        <div className=" w-full max-w-screen-md mx-auto">
-          <h2 className="mt-32 text-xl text-center font-semibold">
+        <div className="w-full max-w-screen-md mx-auto">
+          <h2 className="mt-16 xl:mt-32 text-xl text-center font-semibold">
             {t('searchTitle')}
           </h2>
           <SearchInput

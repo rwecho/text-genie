@@ -10,7 +10,8 @@
     "searchTitle": "Search, collect, and organize our knowledge base",
     "searchPlaceholder": "Organizing knowledge starts with a question",
     "copied": "Copied",
-    "appName": "Knowledges"
+    "appName": "Knowledges",
+    "appDescription": "A simple knowledge base app"
   },
 
   "ThreadPage": {
@@ -18,13 +19,15 @@
     "inputPlaceholder": "Add a comment",
     "copied": "Copied",
     "dislikeSuccess": "Dislike success",
-    "undislikeSuccess": "Cancel dislike success"
+    "undislikeSuccess": "Cancel dislike success",
+    "title": "Thread Page"
   },
   "ThreadsPage": {
     "searchPlaceholder": "Search",
     "dataEndMessage": "It is all, nothing more 🤐",
     "deleteSuccess": "Delete success",
     "deleteConfirm": "Are you sure you want to delete?",
-    "deleteConfirmDescription": "After deletion, it cannot be recovered, please operate with caution"
+    "deleteConfirmDescription": "After deletion, it cannot be recovered, please operate with caution",
+    "title": "Threads Page"
   }
 }
