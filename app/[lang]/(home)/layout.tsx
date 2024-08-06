@@ -40,6 +40,7 @@ import SearchInput from '@/components/SearchInput'
 import { createThread } from '@/services/thread'
 import { useParams } from 'next/navigation'
 import { useLocale, useTranslations } from 'next-intl'
+import PageProgress from '@/components/PageProgress'
 
 const { Header, Content, Sider } = Layout
 export default function RootLayout({
@@ -172,6 +173,7 @@ export default function RootLayout({
 
   return (
     <>
+      <PageProgress />
       <Layout>
         <Sider
           className="hidden md:block "
