@@ -8,17 +8,17 @@ import createMiddleware from 'next-intl/middleware'
 
 const isPublicRoute = createRouteMatcher(['/sign-in(.*)', '/sign-up(.*)'])
 
-export default clerkMiddleware((auth, request) => {
-  // if (isPublicRoute(request)) {
-  //   return
-  // }
-  // const { userId } = auth()
-  // if (!userId) {
-  //   const signInUrl = new URL('/sign-in', request.url)
-  //   signInUrl.searchParams.set('redirect_url', request.url)
-  //   return NextResponse.redirect(signInUrl)
-  // }
-  // auth().protect()
+export default clerkMiddleware(async (auth, request) => {
+  if (isPublicRoute(request)) {
+    return
+  }
+  const { userId } = auth()
+  if (!userId) {
+    const signInUrl = new URL(`/sign-in`, request.url)
+    signInUrl.searchParams.set('redirect_url', request.url)
+    return NextResponse.redirect(signInUrl)
+  }
+  auth().protect()
 
   return createMiddleware({
     locales: ['en', 'cn'],
